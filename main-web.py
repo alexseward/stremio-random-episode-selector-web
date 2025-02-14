@@ -71,7 +71,7 @@ def readListandChooseRandom():
         if (episode['season'] == int(seasonAndEpisodeNumber[0])) and (episode['number'] == int(seasonAndEpisodeNumber[1])):
             finalEpisodeName = episode.get('title') or episode.get('name', "Something went wrong")
 
-    finalLink = f"stremio:///detail/series/{id}/{id}:{finalEpisode}"
+    finalLink = f"https://web.stremio.com/#/detail/series/{id}/{id}%3A{seasonAndEpisodeNumber[0]}%3A{seasonAndEpisodeNumber[1]}"
 
     return [nameOfShow, finalEpisode, finalLink, finalEpisodeName, seasonAndEpisodeNumber[0], seasonAndEpisodeNumber[1]]
 

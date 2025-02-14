@@ -1,0 +1,119 @@
+import tkinter as tk
+from tkinter import messagebox
+import requests
+import random
+import webbrowser
+import imdb
+import yaml
+import os
+os.chdir("/Users/alex/Library/CloudStorage/OneDrive-Personal/Documents/VSCode/stremio-random-episode-selector-main")
+
+# Initialize IMDb API
+ia = imdb.Cinemagoer()
+
+# Existing function to find IMDb ID
+def findIMDBid(name):
+    movie = ia.search_movie(name)[0]
+    return f'tt{movie.movieID}'
+
+# Existing function to process season and episode numbers
+def processEpisodeCode(code):
+    splitCode = code.split(':')
+    return splitCode
+
+# Function to read YAML list and choose a random episode
+def readListandChooseRandom():
+    with open("list.yaml") as seriesListFile:
+        seriesList = yaml.safe_load(seriesListFile)['series']
+
+    showEntry = random.choice(seriesList)
+    seasons = None
+    extras = None
+
+    if isinstance(showEntry, dict):
+        nameOfShow = list(showEntry.keys())[0]
+        if 'seasons' in showEntry[nameOfShow]:
+            seasons = showEntry[nameOfShow]['seasons']
+        if 'extra' in showEntry[nameOfShow]:
+            extras = showEntry[nameOfShow]['extra']
+    else:
+        nameOfShow = showEntry
+
+    id = findIMDBid(nameOfShow)
+    episodeList = []
+
+    # Use Cinemeta addon API to get metadata from the IMDb ID of the show
+    r = requests.get(f"https://v3-cinemeta.strem.io/meta/series/{id}.json")
+    showMetadata = r.json()
+
+    # Adds episodes to random pool; only include seasons greater than 0
+    for episode in showMetadata['meta']['videos']:
+        if 'season' in episode and episode['season'] > 0:  
+            if seasons is None or (episode['season'] in range(seasons[0], seasons[1] + 1)):
+                episodeList.append(f"{episode['season']}:{episode['number']}")
+
+    if extras is not None:
+        for episode in extras:
+            if 'season' in episode and episode['season'] > 0:
+                episodeList.append(f"{episode['season']}:{episode['number']}")
+
+    if not episodeList:
+        return [nameOfShow, None, None, None, None, None]
+
+    finalEpisode = random.choice(episodeList)
+    seasonAndEpisodeNumber = processEpisodeCode(finalEpisode)
+    finalEpisodeName = "Something went wrong"
+
+    for episode in showMetadata['meta']['videos']:
+        if (episode['season'] == int(seasonAndEpisodeNumber[0])) and (episode['number'] == int(seasonAndEpisodeNumber[1])):
+            finalEpisodeName = episode.get('title') or episode.get('name', "Something went wrong")
+
+    finalLink = f"https://web.stremio.com/#/detail/series/{id}/{id}%3A{finalEpisode}"
+
+    return [nameOfShow, finalEpisode, finalLink, finalEpisodeName, seasonAndEpisodeNumber[0], seasonAndEpisodeNumber[1]]
+
+class StremioApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Stremio Random Episode Chooser")
+
+        self.show_name = tk.StringVar()
+        self.season = tk.StringVar()
+        self.episode = tk.StringVar()
+        self.episode_name = tk.StringVar()
+        self.link = ""
+
+        self.create_widgets()
+
+    def create_widgets(self):
+        tk.Button(self.root, text="Choose Random Episode", command=self.choose_random_episode).pack(pady=10)
+        tk.Label(self.root, textvariable=self.show_name).pack()
+        tk.Label(self.root, textvariable=self.season).pack()
+        tk.Label(self.root, textvariable=self.episode).pack()
+        tk.Label(self.root, textvariable=self.episode_name).pack()
+        tk.Button(self.root, text="Open in Stremio", command=self.open_stremio).pack(pady=10)
+
+    def choose_random_episode(self):
+        finalSelection = readListandChooseRandom()
+
+        if finalSelection[1] is None:
+            messagebox.showerror("Error", "No valid episodes found!")
+            return
+
+        # Update the GUI labels with the episode details
+        self.show_name.set(f"Show selected: {finalSelection[0]}")
+        self.season.set(f"Season: {finalSelection[4]}")
+        self.episode.set(f"Episode: {finalSelection[5]}")
+        self.episode_name.set(f"Name: {finalSelection[3]}")
+        self.link = finalSelection[2]
+
+    def open_stremio(self):
+        if self.link:
+            webbrowser.open(self.link)
+        else:
+            messagebox.showerror("Error", "No episode selected!")
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = StremioApp(root)
+    root.mainloop()

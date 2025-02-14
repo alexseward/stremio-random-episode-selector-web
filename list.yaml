@@ -1,14 +1,19 @@
 series:
-    - Rick and Morty
-    - Doctor Who (2005):
-        seasons: [1,10]
-        extra:
-            - 0:2
-            - 0:4
-            - 0:7
-            - 0:14
-            - 0:16
-            - 0:17
-    - Modern Family
-    - The Office (2005):
-        seasons: [1,7]
+  - South Park
+  - Family Guy
+  - The Simpsons
+  - Futurama
+  - Rick and Morty
+  - Archer
+  - It's Always Sunny in Philadelphia
+  - Peep Show
+  - That Mitchell and Webb Look
+  - The IT Crowd
+  - The Inbetweeners
+  - Green Wing
+  - I'm Alan Partridge
+  - Fawlty Towers
+  - Mr. Bean
+  - Louie
+  - Curb Your Enthusiasm
+  - The Thick of It
