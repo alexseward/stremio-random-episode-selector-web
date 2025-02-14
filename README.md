@@ -1,3 +1,5 @@
+Added a version of the python script that uses the Stremio web, and a version with a simple tkinter GUI. Need to tidy up and document :)
+
 # Stremio Random Episode Selector
 
 This application is a plugin for Stremio that allows users to randomly select an episode from their favorite TV shows. It's perfect for those times when you can't decide what to watch!
